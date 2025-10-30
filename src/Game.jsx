@@ -86,12 +86,12 @@ export default function Game() {
 
     // load images first
     (async () => {
-      imgs.current.dino = (await loadImage("/sprites/dino.png")) || null;
-      imgs.current.dinoDuck = (await loadImage("/sprites/dino_duck.png")) || null;
-      imgs.current.bird = (await loadImage("/sprites/bird.png")) || null;
-      imgs.current.cactus = (await loadImage("/sprites/cactus.png")) || null;
-      imgs.current.ground = (await loadImage("/sprites/ground.png")) || null;
-      imgs.current.cloud = (await loadImage("/sprites/cloud.png")) || null;
+      imgs.current.dino = (await loadImage(`${import.meta.env.BASE_URL}sprites/dino.png`)) || null;
+      imgs.current.dinoDuck = (await loadImage(`${import.meta.env.BASE_URL}sprites/dino_duck.png`)) || null;
+      imgs.current.bird = (await loadImage(`${import.meta.env.BASE_URL}sprites/bird.png`)) || null;
+      imgs.current.cactus = (await loadImage(`${import.meta.env.BASE_URL}sprites/cactus.png`)) || null;
+      imgs.current.ground = (await loadImage(`${import.meta.env.BASE_URL}sprites/ground.png`)) || null;
+      imgs.current.cloud = (await loadImage(`${import.meta.env.BASE_URL}sprites/cloud.png`)) || null;
 
       initEntities();
       startLoop();
