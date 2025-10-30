@@ -293,6 +293,7 @@ export default function Game() {
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
       ctx.imageSmoothingEnabled = false;
+      canvas.style.imageRendering = "pixelated";
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // background
