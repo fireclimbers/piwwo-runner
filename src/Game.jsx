@@ -21,6 +21,8 @@ const BASE_SPEED = 300; // px/s
 const WINDOW_WIDTH = 800;
 const WINDOW_HEIGHT = 260;
 
+const DEBUG = false;
+
 
 export default function Game() {
   const canvasRef = useRef(null);
@@ -252,12 +254,21 @@ export default function Game() {
       };
 
       for (const o of s.obstacles) {
-        const obstacleBox = {
+        let obstacleBox = {
           x: o.x + 4,
           y: o.y - o.h + 4,
           w: o.w - 8,
           h: o.h - 6,
         };
+        if (o.type === 'bird') {
+          obstacleBox = {
+            x: o.x + 4,
+            y: o.y - o.h + 12,
+            w: o.w - 8,
+            h: o.h - 16,
+          };
+        }
+
 
         // if player is ducking, tighten vertical hitbox more (player is lower)
         if (p.ducking) {
@@ -328,9 +339,19 @@ export default function Game() {
             const frameIndex = anim.current.birdFrame % 2;
             const sx = frameIndex * o.spriteW;
             ctx.drawImage(o.sprite, sx, 0, o.spriteW, o.spriteH, o.x, o.y - o.h, o.w, o.h);
+
+            if (DEBUG) {
+              ctx.strokeStyle = "rgba(255,0,0,0.6)";
+              ctx.strokeRect(o.x + 4, o.y - o.h + 12, o.w - 8, o.h - 16);
+            }
           } else {
             // cactus (single image) - draw scaled to o.w x o.h
             ctx.drawImage(o.sprite, 0, 0, o.spriteW, o.spriteH, o.x, o.y - o.h, o.w, o.h);
+
+            if (DEBUG) {
+              ctx.strokeStyle = "rgba(255,0,0,0.6)";
+              ctx.strokeRect(o.x + 4, o.y - o.h + 4, o.w - 8, o.h - 6);
+            }
           }
         } else {
           ctx.fillStyle = o.type === "bird" ? "#222" : "#127a13";
@@ -385,10 +406,12 @@ export default function Game() {
       }
 
       // hitbox
-      // const playerDrawW = p.ducking ? p.duckW : p.standingW;
-      // const playerDrawH = p.ducking ? p.duckH : p.standingH;
-      // ctx.strokeStyle = "rgba(255,0,0,0.6)";
-      // ctx.strokeRect(p.x + 8, p.y - playerDrawH + 6, playerDrawW - 16, playerDrawH - 10);
+      if (DEBUG) {
+        const playerDrawW = p.ducking ? p.duckW : p.standingW;
+        const playerDrawH = p.ducking ? p.duckH : p.standingH;
+        ctx.strokeStyle = "rgba(255,0,0,0.6)";
+        ctx.strokeRect(p.x + 8, p.y - playerDrawH + 6, playerDrawW - 16, playerDrawH - 10);
+      }
 
       // HUD
       ctx.fillStyle = "#222";
