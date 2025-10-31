@@ -16,12 +16,60 @@ import React, { useEffect, useRef, useState } from "react";
 const GRAVITY = 2200; // px/s^2
 const JUMP = -600; // px/s initial jump velocity
 const GROUND_Y = 200;
-const BASE_SPEED = 300; // px/s
+const BASE_SPEED = 450; // px/s
 
 const WINDOW_WIDTH = 800;
 const WINDOW_HEIGHT = 260;
 
 const DEBUG = false;
+
+const playerSprite = {
+  w: 30,
+  h: 48,
+  wDuck: 30,
+  hDuck: 32,
+  hitbox: {
+    x: 8,
+    y: 6,
+    w: -16,
+    h: -10
+  }
+}
+
+const cactusSprite = {
+  w: 28,
+  h: 38,
+  hitbox: {
+    x: 4,
+    y: 4,
+    w: -8,
+    h: -6
+  }
+}
+
+
+const bigSprite = {
+  w: 52,
+  h: 54,
+  hitbox: {
+    x: 4,
+    y: 4,
+    w: -8,
+    h: -6
+  }
+}
+
+
+const birdSprite = {
+  w: 54,
+  h: 40,
+  hitbox: {
+    x: 4,
+    y: 12,
+    w: -8,
+    h: -20
+  }
+}
 
 
 export default function Game() {
@@ -49,6 +97,7 @@ export default function Game() {
     dinoDuck: null,
     bird: null,
     cactus: null,
+    big: null,
     ground: null,
     cloud: null,
   });
@@ -92,6 +141,7 @@ export default function Game() {
       imgs.current.dinoDuck = (await loadImage(`${import.meta.env.BASE_URL}sprites/dino_duck.png`)) || null;
       imgs.current.bird = (await loadImage(`${import.meta.env.BASE_URL}sprites/bird.png`)) || null;
       imgs.current.cactus = (await loadImage(`${import.meta.env.BASE_URL}sprites/cactus.png`)) || null;
+      imgs.current.big = (await loadImage(`${import.meta.env.BASE_URL}sprites/big.png`)) || null;
       imgs.current.ground = (await loadImage(`${import.meta.env.BASE_URL}sprites/ground.png`)) || null;
       imgs.current.cloud = (await loadImage(`${import.meta.env.BASE_URL}sprites/cloud.png`)) || null;
 
@@ -109,6 +159,7 @@ export default function Game() {
       s.speed = BASE_SPEED;
       s.score = 0;
       s._spawnTimer = 0;
+      s._randSpawn = 0;
       s._lastSpeedTick = 0;
 
       s.player = {
@@ -116,12 +167,12 @@ export default function Game() {
         y: s.groundY,
         vx: 0,
         vy: 0,
-        standingW: 30,
-        standingH: 48,
-        duckW: 30,
-        duckH: 32,
-        width: 30,
-        height: 48,
+        standingW: playerSprite.w,
+        standingH: playerSprite.h,
+        duckW: playerSprite.wDuck,
+        duckH: playerSprite.hDuck,
+        width: playerSprite.w,
+        height: playerSprite.h,
         grounded: true,
         ducking: false,
         spriteStand: imgs.current.dino,
@@ -153,33 +204,46 @@ export default function Game() {
     function spawnObstacle() {
       const s = S.current;
       const r = Math.random();
-      if (r < 0.72) {
-        const baseW = 17;
-        const baseH = 35;
+      if (r < 0.65) {
         // random scale (1x to 1.6x)
-        const scale = 1 + Math.random() * 0.6;
-        s.obstacles.push({
-          type: "cactus",
-          x: canvas.width + 30,
-          y: s.groundY,
-          w: Math.round(baseW * scale),
-          h: Math.round(baseH * scale),
-          sprite: imgs.current.cactus,
-          spriteW: baseW,
-          spriteH: baseH,
-        });
-      } else {
+        const r2 = Math.random();
+        if (r2 < 0.65) {
+          const scale = 0.9 + Math.random() * 0.3;
+          s.obstacles.push({
+            type: "cactus",
+            x: canvas.width + 30,
+            y: s.groundY,
+            w: Math.round(cactusSprite.w * scale),
+            h: Math.round(cactusSprite.h * scale),
+            sprite: imgs.current.cactus,
+            spriteW: cactusSprite.w,
+            spriteH: cactusSprite.h,
+          });
+        } else {
+          const scale = 1 + Math.random() * 0.1;
+          s.obstacles.push({
+            type: "big",
+            x: canvas.width + 30,
+            y: s.groundY,
+            w: Math.round(bigSprite.w * scale),
+            h: Math.round(bigSprite.h * scale),
+            sprite: imgs.current.big,
+            spriteW: bigSprite.w,
+            spriteH: bigSprite.h,
+          });
+        }
+      } else if ((r => 0.9) && (s.score > 300)) {
         const birdHeights = [s.groundY - 30, s.groundY - 60, s.groundY - 90];
         const y = birdHeights[Math.floor(Math.random() * birdHeights.length)];
         s.obstacles.push({
           type: "bird",
           x: canvas.width + 40,
           y,
-          w: 46,
-          h: 40,
+          w: birdSprite.w,
+          h: birdSprite.h,
           sprite: imgs.current.bird,
-          spriteW: 46,
-          spriteH: 40,
+          spriteW: birdSprite.w,
+          spriteH: birdSprite.h,
           flap: 0,
         });
       }
@@ -221,20 +285,21 @@ export default function Game() {
       s.groundOffset = (s.groundOffset - s.speed * dt) % canvas.width;
 
       // score increases based on time (consistent across machines)
-      s.score += 60 * dt; // roughly 60 points per second base
+      s.score += 10 * dt; // roughly 60 points per second base
       s._spawnTimer = (s._spawnTimer || 0) + dt;
 
       // spawn interval depends on score (difficulty)
-      const spawnInterval = Math.max(0.7, 1.6 - Math.min(1.2, s.score / 600));
+      const spawnInterval = 2.1 - Math.min(1.6, s.score / 500) + s._randSpawn;
       if (s._spawnTimer > spawnInterval) {
         spawnObstacle();
         s._spawnTimer = 0;
+        s._randSpawn = Math.random() * 0.3;
       }
 
       // difficulty scaling once per 500 points
-      if (Math.floor(s.score) % 500 === 0 && Math.floor(s.score) !== 0) {
-        if (!s._lastSpeedTick || Math.floor(s.score) - s._lastSpeedTick >= 500) {
-          s.speed += 20;
+      if (Math.floor(s.score) % 100 === 0 && Math.floor(s.score) !== 0) {
+        if (!s._lastSpeedTick || Math.floor(s.score) - s._lastSpeedTick >= 100) {
+          s.speed += 30;
           s._lastSpeedTick = Math.floor(s.score);
         }
       }
@@ -247,25 +312,33 @@ export default function Game() {
       const playerDrawY = p.y - playerDrawH;
 
       const playerBox = {
-        x: playerDrawX + 8,
-        y: playerDrawY + 6,
-        w: playerDrawW - 16,
-        h: playerDrawH - 10,
+        x: playerDrawX + playerSprite.hitbox.x,
+        y: playerDrawY + playerSprite.hitbox.y,
+        w: playerDrawW + playerSprite.hitbox.w,
+        h: playerDrawH + playerSprite.hitbox.h
       };
 
       for (const o of s.obstacles) {
         let obstacleBox = {
-          x: o.x + 4,
-          y: o.y - o.h + 4,
-          w: o.w - 8,
-          h: o.h - 6,
+          x: o.x + cactusSprite.hitbox.x,
+          y: o.y - o.h + cactusSprite.hitbox.y,
+          w: o.w + cactusSprite.hitbox.w,
+          h: o.h + cactusSprite.hitbox.h,
         };
+        if (o.type === 'big') {
+          obstacleBox = {
+            x: o.x + bigSprite.hitbox.x,
+            y: o.y - o.h + bigSprite.hitbox.y,
+            w: o.w + bigSprite.hitbox.w,
+            h: o.h + bigSprite.hitbox.h,
+          };
+        }
         if (o.type === 'bird') {
           obstacleBox = {
-            x: o.x + 4,
-            y: o.y - o.h + 12,
-            w: o.w - 8,
-            h: o.h - 16,
+            x: o.x + birdSprite.hitbox.x,
+            y: o.y - o.h + birdSprite.hitbox.y,
+            w: o.w + birdSprite.hitbox.w,
+            h: o.h + birdSprite.hitbox.h
           };
         }
 
@@ -342,7 +415,7 @@ export default function Game() {
 
             if (DEBUG) {
               ctx.strokeStyle = "rgba(255,0,0,0.6)";
-              ctx.strokeRect(o.x + 4, o.y - o.h + 12, o.w - 8, o.h - 16);
+              ctx.strokeRect(o.x + birdSprite.hitbox.x, o.y - o.h + birdSprite.hitbox.y, o.w + birdSprite.hitbox.w, o.h + birdSprite.hitbox.h);
             }
           } else {
             // cactus (single image) - draw scaled to o.w x o.h
@@ -350,7 +423,12 @@ export default function Game() {
 
             if (DEBUG) {
               ctx.strokeStyle = "rgba(255,0,0,0.6)";
-              ctx.strokeRect(o.x + 4, o.y - o.h + 4, o.w - 8, o.h - 6);
+              if (o.type === 'big') {
+                ctx.strokeRect(o.x + bigSprite.hitbox.x, o.y - o.h + bigSprite.hitbox.y, o.w + bigSprite.hitbox.w, o.h + bigSprite.hitbox.h);
+              } else {
+                ctx.strokeRect(o.x + cactusSprite.hitbox.x, o.y - o.h + cactusSprite.hitbox.y, o.w + cactusSprite.hitbox.w, o.h + cactusSprite.hitbox.h);
+              }
+              
             }
           }
         } else {
@@ -410,7 +488,7 @@ export default function Game() {
         const playerDrawW = p.ducking ? p.duckW : p.standingW;
         const playerDrawH = p.ducking ? p.duckH : p.standingH;
         ctx.strokeStyle = "rgba(255,0,0,0.6)";
-        ctx.strokeRect(p.x + 8, p.y - playerDrawH + 6, playerDrawW - 16, playerDrawH - 10);
+        ctx.strokeRect(p.x + playerSprite.hitbox.x, p.y - playerDrawH + playerSprite.hitbox.y, playerDrawW + playerSprite.hitbox.w, playerDrawH + playerSprite.hitbox.h);
       }
 
       // HUD
