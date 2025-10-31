@@ -160,6 +160,8 @@ export default function Game() {
       s.score = 0;
       s._spawnTimer = 0;
       s._randSpawn = 0;
+      s._cloudTimer = 0;
+      s._cloudInterval = 2;
       s._lastSpeedTick = 0;
 
       s.player = {
@@ -180,8 +182,8 @@ export default function Game() {
       };
 
       // initial clouds
-      s.clouds.push({ x: 300, y: 40, w: 46, h: 13, sprite: imgs.current.cloud });
-      s.clouds.push({ x: 700, y: 70, w: 46, h: 13, sprite: imgs.current.cloud });
+      s.clouds.push({ x: 400, y: 40, w: 18, h: 18, sprite: imgs.current.cloud });
+      s.clouds.push({ x: 700, y: 70, w: 18, h: 18, sprite: imgs.current.cloud });
 
       // reset animations
       anim.current = {
@@ -304,6 +306,13 @@ export default function Game() {
         }
       }
 
+      s._cloudTimer = (s._cloudTimer || 0) + dt;
+      if (s._cloudTimer > s._cloudInterval) {
+        s.clouds.push({ x: canvas.width + 30, y: 30 + (Math.random() * 40), w: 18, h: 18, sprite: imgs.current.cloud });
+        s._cloudTimer = 0;
+        s._cloudInterval = 1 + (Math.random() * 2.5);
+      }
+
       // collisions (use smaller hitboxes)
       const playerDrawW = p.ducking ? p.duckW : p.standingW;
       const playerDrawH = p.ducking ? p.duckH : p.standingH;
@@ -383,6 +392,9 @@ export default function Game() {
       // background
       ctx.fillStyle = "#f7f7f7";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "rgb(247, 243, 252)";
+      ctx.fillRect(0, 0, canvas.width, 200);
 
       // clouds
       for (const c of s.clouds) {
