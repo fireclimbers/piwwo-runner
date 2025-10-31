@@ -71,6 +71,9 @@ const birdSprite = {
   }
 }
 
+const isTouchDevice = "ontouchstart" in window && !window.matchMedia("(pointer:fine)").matches;
+
+
 
 export default function Game() {
   const canvasRef = useRef(null);
@@ -625,13 +628,39 @@ export default function Game() {
       }
     }
 
+    function onTouch(e) {
+      const s = S.current;
+
+      // restart if not running
+      if (!s.running) {
+        initEntities();
+        s.running = true;
+        startLoop();
+        return;
+      }
+      
+      //if (!s.running) return;
+      const p = s.player;
+      if (!p) return;
+
+      if (p.grounded && !p.ducking) {
+        p.vy = s.jumpImpulse;
+        p.grounded = false;
+      }
+    }
+
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
+
+    if (isTouchDevice) {
+      window.addEventListener("touchstart", onTouch);
+    }
 
     // cleanup on unmount
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
+      if (isTouchDevice) { window.removeEventListener("touchstart", onTouch) };
       if (rafId) cancelAnimationFrame(rafId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
