@@ -628,7 +628,7 @@ export default function Game() {
   return (
     <div style={{ width: 800, maxWidth: "96vw", margin: "0 auto" }}>
       <div style={{ position: "relative" }}>
-        <canvas ref={canvasRef} style={{ width: "100%", display: "block", border: "2px solid #333" }} />
+        <canvas ref={canvasRef} style={{ width: "100%", display: "block" }} />
       </div>
 
       <div style={{ marginTop: 12, textAlign: "center" }}>
@@ -641,7 +641,7 @@ export default function Game() {
           </>
         ) : (
           <>
-            <h3 style={{ margin: 0,color:'#ffffff00' }}>-</h3>
+            <h3 style={{ margin: 0 }}>Chrome Piwwo Game</h3>
             <p style={{ margin: 4,color:'#ffffff00' }}>
               -
             </p>
