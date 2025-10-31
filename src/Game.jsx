@@ -683,8 +683,8 @@ export default function Game() {
         ) : (
           <>
             <h3 style={{ margin: 0 }}>Chrome Piwwo Game</h3>
-            <p style={{ margin: 4,color:'#ffffff00' }}>
-              -
+            <p style={{ margin: 4 }}>
+              Space/Up arrow to jump, Down arrow to duck
             </p>
           </>
         )}
