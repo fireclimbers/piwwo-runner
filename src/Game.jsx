@@ -677,7 +677,7 @@ export default function Game() {
           <>
             <h3 style={{ margin: 0 }}>Game Over</h3>
             <p style={{ margin: 4 }}>
-              Press R to restart
+              {isTouchDevice ? 'Tap to restart' : 'Press R to restart'}
             </p>
           </>
         ) : (
