@@ -9,7 +9,7 @@ import React, { useEffect, useRef, useState } from "react";
  */
 
 
-// TODO sprites - piwwos (ground), megatron? (air)
+// TODO sprites - another piwwo?, death, mobile??
 
 
 
