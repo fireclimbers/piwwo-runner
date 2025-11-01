@@ -238,7 +238,7 @@ export default function Game() {
           });
         }
       } else if ((r => 0.9) && (s.score > 300)) {
-        const birdHeights = [s.groundY - 30, s.groundY - 60, s.groundY - 90];
+        const birdHeights = isTouchDevice ? [s.groundY - 15, s.groundY - 50, s.groundY - 80] : [s.groundY - 30, s.groundY - 60, s.groundY - 90];
         const y = birdHeights[Math.floor(Math.random() * birdHeights.length)];
         s.obstacles.push({
           type: "bird",
@@ -684,7 +684,7 @@ export default function Game() {
           <>
             <h3 style={{ margin: 0 }}>Chrome Piwwo Game</h3>
             <p style={{ margin: 4 }}>
-              Space/Up arrow to jump, Down arrow to duck
+              {isTouchDevice ? 'Tap to jump' : 'Space/Up arrow to jump, Down arrow to duck'}
             </p>
           </>
         )}
